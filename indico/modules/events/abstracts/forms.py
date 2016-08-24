@@ -16,13 +16,17 @@
 
 from __future__ import unicode_literals
 
-from wtforms.fields import BooleanField, IntegerField
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
+from wtforms.fields import BooleanField, IntegerField, StringField, TextAreaField
 from wtforms.validators import NumberRange, Optional, DataRequired
 
+from indico.modules.events.abstracts.fields import AbstractPersonLinkListField
 from indico.modules.events.abstracts.settings import BOASortField, BOACorrespondingAuthorType
+from indico.modules.events.tracks.models.tracks import Track
 from indico.util.i18n import _
 from indico.web.forms.base import IndicoForm
-from indico.web.forms.fields import PrincipalListField, IndicoEnumSelectField, IndicoMarkdownField
+from indico.web.forms.fields import (PrincipalListField, IndicoEnumSelectField, IndicoMarkdownField,
+                                     IndicoQuerySelectMultipleCheckboxField)
 from indico.web.forms.validators import HiddenUnless
 from indico.web.forms.widgets import SwitchWidget
 
@@ -61,3 +65,23 @@ class AbstractSubmissionSettingsForm(IndicoForm):
     authorized_submitters = PrincipalListField(_("Authorized submitters"),
                                                description=_("These users may always submit abstracts, even outside "
                                                              "the regular submission period."))
+
+
+class AbstractForm(IndicoForm):
+    title = StringField(_("Title"), [DataRequired()])
+    description = IndicoMarkdownField(_('Content'), [DataRequired()], editor=True, mathjax=True)
+    submitted_contrib_type = QuerySelectField(_("Type"), get_label='name', allow_blank=True,
+                                              blank_text=_("No type selected"))
+    person_links = AbstractPersonLinkListField(_("People"))
+    submitted_for_tracks = IndicoQuerySelectMultipleCheckboxField(_("Tracks"), get_label=lambda x: x.title,
+                                                                  collection_class=set)
+    submission_comment = TextAreaField(_("Comments"))
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop('event')
+        self.abstract = kwargs.pop('abstract', None)
+        super(AbstractForm, self).__init__(*args, **kwargs)
+        self.submitted_contrib_type.query = self.event.contribution_types
+        if not self.submitted_contrib_type.query.count():
+            del self.submitted_contrib_type
+        self.submitted_for_tracks.query = Track.query.with_parent(self.event).order_by(Track.title)
