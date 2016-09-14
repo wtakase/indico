@@ -19,11 +19,14 @@ from __future__ import unicode_literals
 from collections import OrderedDict
 
 from flask import request
+from sqlalchemy.orm import joinedload
 
 from indico.core.db import db
 from indico.modules.events.abstracts.models.abstracts import Abstract, AbstractState
 from indico.modules.events.abstracts.models.fields import AbstractFieldValue
+from indico.modules.events.abstracts.models.persons import AbstractPersonLink
 from indico.modules.events.contributions.models.fields import ContributionField
+from indico.modules.events.models.persons import EventPerson
 from indico.modules.events.tracks.models.tracks import Track
 from indico.modules.events.util import ListGeneratorBase, serialize_person_link
 from indico.util.i18n import _

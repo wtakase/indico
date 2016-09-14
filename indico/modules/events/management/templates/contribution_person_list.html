@@ -21,6 +21,10 @@
                 <span class="i-button label">{% trans %}Show{% endtrans %}</span>
                 <input type="checkbox" id="filter-speakers" data-filter="speaker" checked>
                 <label for="filter-speakers" class="i-button">{% trans %}Speakers{% endtrans %}</label>
+                {% if include_submitters %}
+                    <input type="checkbox" id="filter-submitters" data-filter="submitter" checked>
+                    <label for="filter-submitters" class="i-button">{% trans %}Submitters{% endtrans %}</label>
+                {% endif %}
                 <input type="checkbox" name="authors" id="filter-primary" data-filter="primary_author" checked>
                 <label for="filter-primary" class="i-button">{% trans %}Primary authors{% endtrans %}</label>
                 <input type="checkbox" name="authors" id="filter-secondary" data-filter="secondary_author" checked>
@@ -37,6 +41,9 @@
                     <th class="i-table">{% trans %}Email{% endtrans %}</th>
                     <th class="i-table">{% trans %}Affiliation{% endtrans %}</th>
                     <th class="i-table">{% trans %}Author type{% endtrans %}</th>
+                    {% if include_submitters %}
+                        <th class="i-table submitter-column" data-sorter="false">{% trans %}Submitter{% endtrans %}</th>
+                    {% endif %}
                     <th class="i-table speaker-column" data-sorter="false"></th>
                 </tr>
             </thead>
@@ -60,6 +67,18 @@
                                 -
                             {% endif %}
                         </td>
+                        {% if include_submitters %}
+                            {% set is_submitter = person_roles.submitter %}
+                            <td class="i-table submitter-column">
+                                {%- if is_submitter %}
+                                    {% set submitter_title = _('This person is a submitter') %}
+                                {%- else -%}
+                                    {% set submitter_title = _('This person is not a submitter') %}
+                                {% endif -%}
+                                <i class="icon-checkmark submitter-icon {{ 'inactive' if not is_submitter }}"
+                                   title="{{ submitter_title }}"></i>
+                            </td>
+                        {% endif %}
                         <td class="i-table">
                             {%- if is_speaker %}
                                 {% set speaker_title = _('This person is a speaker') %}
