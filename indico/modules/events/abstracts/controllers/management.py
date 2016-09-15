@@ -193,3 +193,10 @@ class RHAbstractPersonList(RHManageAbstractsActionsBase):
             abstract_persons_dict[submitter]['submitter'] |= True
         return jsonify_template('events/management/contribution_person_list.html',
                                 event_persons=abstract_persons_dict, event=self.event_new, include_submitters=True)
+
+
+class RHAbstractsDownloadAttachments(RHManageAbstractsActionsBase):
+    """Generate a ZIP file with attachment files for a given list of abstracts"""
+
+    def _process(self):
+        pass
