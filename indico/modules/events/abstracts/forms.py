@@ -17,18 +17,19 @@
 from __future__ import unicode_literals
 
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from wtforms.fields import BooleanField, IntegerField, StringField, TextAreaField
+from wtforms.fields import BooleanField, IntegerField, StringField, TextAreaField, HiddenField
 from wtforms.validators import NumberRange, Optional, DataRequired
 
 from indico.modules.events.abstracts.fields import AbstractPersonLinkListField
 from indico.modules.events.abstracts.settings import BOASortField, BOACorrespondingAuthorType
 from indico.modules.events.tracks.models.tracks import Track
 from indico.util.i18n import _
+from indico.web.flask.templating import get_template_module
 from indico.web.forms.base import IndicoForm
 from indico.web.forms.fields import (PrincipalListField, IndicoEnumSelectField, IndicoMarkdownField,
                                      IndicoQuerySelectMultipleCheckboxField)
 from indico.web.forms.validators import HiddenUnless
-from indico.web.forms.widgets import SwitchWidget
+from indico.web.forms.widgets import SwitchWidget, DropzoneWidget
 
 
 class AbstractContentSettingsForm(IndicoForm):
@@ -76,6 +77,7 @@ class AbstractForm(IndicoForm):
     submitted_for_tracks = IndicoQuerySelectMultipleCheckboxField(_("Tracks"), get_label=lambda x: x.title,
                                                                   collection_class=set)
     submission_comment = TextAreaField(_("Comments"))
+    attachments = HiddenField(_('Attachments'), widget=DropzoneWidget(style='thin'))
 
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop('event')
@@ -85,3 +87,6 @@ class AbstractForm(IndicoForm):
         if not self.submitted_contrib_type.query.count():
             del self.submitted_contrib_type
         self.submitted_for_tracks.query = Track.query.with_parent(self.event).order_by(Track.title)
+        tpl = get_template_module('forms/_dropzone_themes.html')
+        self.attachments.widget.options['previewTemplate'] = tpl.thin_preview_template()
+        self.attachments.widget.options['dictRemoveFile'] = tpl.remove_icon()

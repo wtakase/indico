@@ -39,7 +39,7 @@
                 var self = this;
                 var file = $dz.data('value');
 
-                if (file) {
+                if (file && typeof file === 'object') {
                     var existingFile = {
                         name: file.filename,
                         size: file.size,
